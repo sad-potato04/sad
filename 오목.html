@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>오목 게임</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin: 30px;
+    }
+    #board {
+      display: grid;
+      grid-template-columns: repeat(15, 30px);
+      grid-template-rows: repeat(15, 30px);
+      width: max-content;
+      margin: auto;
+      gap: 1px;
+      background-color: #aaa;
+    }
+    .cell {
+      width: 30px;
+      height: 30px;
+      background-color: #f4f4f4;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .black {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: black;
+    }
+    .white {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: white;
+      border: 1px solid #000;
+    }
+    #status {
+      margin-top: 20px;
+      font-size: 1.2em;
+    }
+    button {
+      margin-top: 10px;
+      padding: 5px 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>오목 게임</h1>
+  <div id="board"></div>
+  <div id="status">플레이어: ● (흑)</div>
+  <button onclick="resetGame()">다시 시작</button>
+
+  <script>
+    const boardSize = 15;
+    const board = document.getElementById("board");
+    const statusText = document.getElementById("status");
+
+    let currentPlayer = "black"; // black or white
+    let gameOver = false;
+    const cells = [];
+
+    function createBoard() {
+      board.innerHTML = "";
+      for (let y = 0; y < boardSize; y++) {
+        cells[y] = [];
+        for (let x = 0; x < boardSize; x++) {
+          const cell = document.createElement("div");
+          cell.classList.add("cell");
+          cell.dataset.x = x;
+          cell.dataset.y = y;
+          cell.addEventListener("click", handleClick);
+          board.appendChild(cell);
+          cells[y][x] = null;
+        }
+      }
+    }
+
+    function handleClick(e) {
+      if (gameOver) return;
+      const x = parseInt(e.target.dataset.x);
+      const y = parseInt(e.target.dataset.y);
+      if (cells[y][x]) return; // 이미 둔 곳
+
+      const stone = document.createElement("div");
+      stone.classList.add(currentPlayer);
+      e.target.appendChild(stone);
+      cells[y][x] = currentPlayer;
+
+      if (checkWin(x, y, currentPlayer)) {
+        statusText.textContent = `승리: ${currentPlayer === "black" ? "● (흑)" : "○ (백)"}`;
+        gameOver = true;
+      } else {
+        currentPlayer = currentPlayer === "black" ? "white" : "black";
+        statusText.textContent = `플레이어: ${currentPlayer === "black" ? "● (흑)" : "○ (백)"}`;
+      }
+    }
+
+    function checkWin(x, y, player) {
+      const directions = [
+        [1, 0], [0, 1], [1, 1], [1, -1]
+      ];
+      for (const [dx, dy] of directions) {
+        let count = 1;
+        count += countStones(x, y, dx, dy, player);
+        count += countStones(x, y, -dx, -dy, player);
+        if (count >= 5) return true;
+      }
+      return false;
+    }
+
+    function countStones(x, y, dx, dy, player) {
+      let count = 0;
+      let nx = x + dx;
+      let ny = y + dy;
+      while (
+        nx >= 0 && ny >= 0 &&
+        nx < boardSize && ny < boardSize &&
+        cells[ny][nx] === player
+      ) {
+        count++;
+        nx += dx;
+        ny += dy;
+      }
+      return count;
+    }
+
+    function resetGame() {
+      gameOver = false;
+      currentPlayer = "black";
+      statusText.textContent = "플레이어: ● (흑)";
+      createBoard();
+    }
+
+    createBoard();
+  </script>
+</body>
+</html>
+
+
+
